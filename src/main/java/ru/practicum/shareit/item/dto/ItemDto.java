@@ -13,7 +13,7 @@ public class ItemDto {
     private long id;
     private String name;
     private String description;
-    private boolean available;
-    private User owner;
+    private Boolean available;
+    private long owner;
     private String request;
 }
