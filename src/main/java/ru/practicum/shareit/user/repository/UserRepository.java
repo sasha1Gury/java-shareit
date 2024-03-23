@@ -35,7 +35,6 @@ public class UserRepository {
 
     public User updateUser(Map<String, Object> updates, long userId) {
         User user = findUserById(userId);
-
         updates.forEach((key, value) -> {
             switch (key) {
                 case "name":
