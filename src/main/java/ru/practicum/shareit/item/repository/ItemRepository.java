@@ -10,7 +10,12 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
+import javax.swing.text.html.Option;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -67,5 +72,26 @@ public class ItemRepository {
             throw new NotFoundException(String.valueOf(itemId));
         }
         return items.get(itemId);
+    }
+
+    public List<Item> findItemByUserId(long userId) {
+        return items.values().stream()
+                .filter(item -> item.getOwner() == userId)
+                .collect(Collectors.toList());
+    }
+
+    public List<Item> getAllItems() {
+        return new ArrayList<>(items.values());
+    }
+
+    public List<Item> searchItem(String searchText) {
+        if (searchText.isBlank()) {
+            return new ArrayList<>();
+        }
+        return getAllItems().stream()
+                .filter(item -> item.getName().toLowerCase().contains(searchText)
+                        || item.getDescription().toLowerCase().contains(searchText))
+                .filter(Item::getAvailable)
+                .collect(Collectors.toList());
     }
 }

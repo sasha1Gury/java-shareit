@@ -5,7 +5,9 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemService;
 
+import javax.swing.*;
 import javax.validation.Valid;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -28,5 +30,21 @@ public class ItemController {
                            @Valid @RequestBody Map<String, Object> updates,
                            @PathVariable("userId") long itemId) {
         return itemService.updateItem(updates, itemId, userId);
+    }
+
+    @GetMapping("/{itemId}")
+    public Item findItemById(@PathVariable("itemId") long itemId) {
+        return itemService.findItemById(itemId);
+    }
+
+    @GetMapping
+    public List<Item> findItemByUserId(@RequestHeader("X-Sharer-User-Id") long userId) {
+        return itemService.findItemByUserId(userId);
+    }
+
+    @GetMapping("/search")
+    public List<Item> searchItems(@RequestParam("text") String search) {
+        search = search.toLowerCase();
+        return itemService.searchItem(search);
     }
 }
