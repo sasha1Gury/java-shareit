@@ -8,27 +8,25 @@ import ru.practicum.shareit.item.exception.NewItemException;
 import ru.practicum.shareit.item.exception.OwnerException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.repository.UserRepository;
+import ru.practicum.shareit.user.repository.UserRepositoryInMemory;
 
-import javax.swing.text.html.Option;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
-public class ItemRepository {
+public class ItemRepositoryInMemory {
     private final Map<Long, Item> items;
-    private final UserRepository userRepository;
+    private final UserRepositoryInMemory userRepositoryInMemory;
     private long id = 1;
 
     public Item createItem(Item item, long userId) {
         if (item.getAvailable() == null) {
             throw new AvailableNotInitInItem();
         }
-        User user = userRepository.findUserById(userId);
+        User user = userRepositoryInMemory.findUserById(userId);
         if (user == null) {
             throw new NotFoundException(String.valueOf(userId));
         }
@@ -43,7 +41,7 @@ public class ItemRepository {
 
     public Item updateItem(Map<String, Object> updates, long itemId, long userId) {
         Item item = findItemById(itemId);
-        User user = userRepository.findUserById(userId);
+        User user = userRepositoryInMemory.findUserById(userId);
         if (item.getOwner() != user.getId()) {
             throw new OwnerException();
         }
