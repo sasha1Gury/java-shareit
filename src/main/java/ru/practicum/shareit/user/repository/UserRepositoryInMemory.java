@@ -1,6 +1,5 @@
 package ru.practicum.shareit.user.repository;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.exception.EmailExistException;
@@ -13,12 +12,12 @@ import java.util.List;
 import java.util.Map;
 
 @Repository
-public class UserRepository {
+public class UserRepositoryInMemory {
     private long id = 1;
     private final Map<Long, User> users;
     private final List<String> emails;
 
-    public UserRepository() {
+    public UserRepositoryInMemory() {
         users = new HashMap<>();
         emails = new ArrayList<>();
     }
