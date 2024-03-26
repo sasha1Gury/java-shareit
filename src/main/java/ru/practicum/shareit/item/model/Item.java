@@ -3,6 +3,7 @@ package ru.practicum.shareit.item.model;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NonNull;
+import ru.practicum.shareit.item.validation.CreateItemValidation;
 
 import javax.validation.constraints.NotBlank;
 
@@ -13,11 +14,9 @@ import javax.validation.constraints.NotBlank;
 @AllArgsConstructor
 public class Item {
     private long id;
-    @NonNull
-    @NotBlank
+    @NotBlank(groups = CreateItemValidation.class)
     private String name;
-    @NonNull
-    @NotBlank
+    @NotBlank(groups = CreateItemValidation.class)
     private String description;
     private Boolean available;
     private long owner;
