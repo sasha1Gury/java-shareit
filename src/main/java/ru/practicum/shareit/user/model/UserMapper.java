@@ -9,6 +9,15 @@ public class UserMapper {
                 dto.getEmail());
     }
 
+    public static void updateEntity(UserDto dto, User user) {
+        if (dto.getName() != null) {
+            user.setName(dto.getName());
+        }
+        if (dto.getEmail() != null) {
+            user.setEmail(dto.getEmail());
+        }
+    }
+
     public static UserDto toDto(User user) {
         return new UserDto(user.getId(),
                 user.getName(),
