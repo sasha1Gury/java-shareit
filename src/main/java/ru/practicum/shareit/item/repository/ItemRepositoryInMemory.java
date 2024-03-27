@@ -51,7 +51,7 @@ public class ItemRepositoryInMemory {
         }
 
         ItemMapper.updateEntity(updates, item);
-
+        items.put(item.getId(), item);
         return ItemMapper.toDto(item);
     }
 
