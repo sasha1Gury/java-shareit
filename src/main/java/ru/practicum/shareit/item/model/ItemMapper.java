@@ -12,12 +12,24 @@ public class ItemMapper {
                 dto.getRequest());
     }
 
-    public static ItemDto toDto(Item item) {
-        return new ItemDto(item.getId(),
-                item.getName(),
-                item.getDescription(),
-                item.getAvailable(),
-                item.getOwner(),
-                item.getRequest());
+    public static void updateEntity(ItemDto dto, Item entity) {
+        if (dto.getName() != null) {
+            entity.setName(dto.getName());
+        }
+        if (dto.getDescription() != null) {
+            entity.setDescription(dto.getDescription());
+        }
+        if (dto.getAvailable() != null) {
+            entity.setAvailable(dto.getAvailable());
+        }
+    }
+
+    public static ItemDto toDto(Item itemDto) {
+        return new ItemDto(itemDto.getId(),
+                itemDto.getName(),
+                itemDto.getDescription(),
+                itemDto.getAvailable(),
+                itemDto.getOwner(),
+                itemDto.getRequest());
     }
 }

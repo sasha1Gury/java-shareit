@@ -3,10 +3,12 @@ package ru.practicum.shareit.item.repository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.exception.AvailableNotInitInItem;
 import ru.practicum.shareit.item.exception.NewItemException;
 import ru.practicum.shareit.item.exception.OwnerException;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.model.ItemMapper;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepositoryInMemory;
 
@@ -22,7 +24,8 @@ public class ItemRepositoryInMemory {
     private final UserRepositoryInMemory userRepositoryInMemory;
     private long id = 1;
 
-    public Item createItem(Item item, long userId) {
+    public ItemDto createItem(ItemDto itemDto, long userId) {
+        Item item = ItemMapper.toEntity(itemDto);
         if (item.getAvailable() == null) {
             throw new AvailableNotInitInItem();
         }
@@ -36,33 +39,30 @@ public class ItemRepositoryInMemory {
         }
         item.setId(id++);
         items.put(item.getId(), item);
-        return item;
+        return ItemMapper.toDto(item);
     }
 
-    public Item updateItem(Map<String, Object> updates, long itemId, long userId) {
+    public ItemDto updateItem(ItemDto updates, long itemId, long userId) {
         Item item = findItemById(itemId);
+
+        // Проверяем, что пользователь с указанным ID является владельцем элемента
         User user = userRepositoryInMemory.findUserById(userId);
         if (item.getOwner() != user.getId()) {
             throw new OwnerException();
         }
-        updates.forEach((key, value) -> {
-            switch (key) {
-                case "id":
-                    break;
-                case "name":
-                    item.setName((String) value);
-                    break;
-                case "description":
-                    item.setDescription((String) value);
-                    break;
-                case "available":
-                    item.setAvailable((Boolean) value);
-                    break;
-                default:
-                    throw new UnsupportedOperationException("Поле '" + key + "' не может быть обновлено");
-            }
-        });
-        return item;
+
+        // Обновляем сущность Item на основе данных из ItemDto
+        ItemMapper.updateEntity(updates, item);
+
+        // Возвращаем обновленный элемент
+        return ItemMapper.toDto(item);
+    }
+
+    public ItemDto findItemDtoById(long itemId) {
+        if (items.get(itemId) == null) {
+            throw new NotFoundException(String.valueOf(itemId));
+        }
+        return ItemMapper.toDto(items.get(itemId));
     }
 
     public Item findItemById(long itemId) {
@@ -72,8 +72,9 @@ public class ItemRepositoryInMemory {
         return items.get(itemId);
     }
 
-    public List<Item> findItemByUserId(long userId) {
+    public List<ItemDto> findItemByUserId(long userId) {
         return items.values().stream()
+                .map(ItemMapper::toDto)
                 .filter(item -> item.getOwner() == userId)
                 .collect(Collectors.toList());
     }
@@ -82,14 +83,15 @@ public class ItemRepositoryInMemory {
         return new ArrayList<>(items.values());
     }
 
-    public List<Item> searchItem(String searchText) {
+    public List<ItemDto> searchItem(String searchText) {
         if (searchText.isBlank()) {
             return new ArrayList<>();
         }
         return getAllItems().stream()
+                .map(ItemMapper::toDto)
                 .filter(item -> item.getName().toLowerCase().contains(searchText)
                         || item.getDescription().toLowerCase().contains(searchText))
-                .filter(Item::getAvailable)
+                .filter(ItemDto::getAvailable)
                 .collect(Collectors.toList());
     }
 }
