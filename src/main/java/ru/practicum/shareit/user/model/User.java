@@ -1,6 +1,7 @@
 package ru.practicum.shareit.user.model;
 
 import lombok.*;
+import ru.practicum.shareit.user.validation.CreateUserValidation;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
@@ -13,9 +14,9 @@ import javax.validation.constraints.NotBlank;
 @NoArgsConstructor
 public class User {
     @EqualsAndHashCode.Exclude private long id;
-    @NotBlank
+    @NotBlank(groups = CreateUserValidation.class)
     private String name;
-    @Email
-    @NotBlank
+    @Email(groups = CreateUserValidation.class)
+    @NotBlank(groups = CreateUserValidation.class)
     private String email;
 }
