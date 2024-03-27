@@ -17,7 +17,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
-    //private final ObjectMapper objectMapper;
 
     @PostMapping
     public User createUser(@Valid @RequestBody User user) {
