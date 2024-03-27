@@ -12,15 +12,15 @@ public class ItemMapper {
                 dto.getRequest());
     }
 
-    public static void updateEntity(ItemDto dto, Item entity) {
+    public static void updateEntity(ItemDto dto, Item item) {
         if (dto.getName() != null) {
-            entity.setName(dto.getName());
+            item.setName(dto.getName());
         }
         if (dto.getDescription() != null) {
-            entity.setDescription(dto.getDescription());
+            item.setDescription(dto.getDescription());
         }
         if (dto.getAvailable() != null) {
-            entity.setAvailable(dto.getAvailable());
+            item.setAvailable(dto.getAvailable());
         }
     }
 
