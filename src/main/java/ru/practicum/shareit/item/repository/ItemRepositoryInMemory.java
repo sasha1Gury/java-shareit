@@ -45,16 +45,13 @@ public class ItemRepositoryInMemory {
     public ItemDto updateItem(ItemDto updates, long itemId, long userId) {
         Item item = findItemById(itemId);
 
-        // Проверяем, что пользователь с указанным ID является владельцем элемента
         User user = userRepositoryInMemory.findUserById(userId);
         if (item.getOwner() != user.getId()) {
             throw new OwnerException();
         }
 
-        // Обновляем сущность Item на основе данных из ItemDto
         ItemMapper.updateEntity(updates, item);
 
-        // Возвращаем обновленный элемент
         return ItemMapper.toDto(item);
     }
 
