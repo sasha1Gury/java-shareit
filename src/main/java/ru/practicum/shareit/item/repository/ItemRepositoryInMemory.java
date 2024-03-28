@@ -3,7 +3,6 @@ package ru.practicum.shareit.item.repository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.exception.AvailableNotInitInItem;
 import ru.practicum.shareit.item.exception.NewItemException;
 import ru.practicum.shareit.item.exception.OwnerException;
@@ -24,8 +23,7 @@ public class ItemRepositoryInMemory {
     private final UserRepositoryInMemory userRepositoryInMemory;
     private long id = 1;
 
-    public ItemDto createItem(ItemDto itemDto, long userId) {
-        Item item = ItemMapper.toEntity(itemDto);
+    public Item createItem(Item item, long userId) {
         if (item.getAvailable() == null) {
             throw new AvailableNotInitInItem();
         }
@@ -39,10 +37,10 @@ public class ItemRepositoryInMemory {
         }
         item.setId(id++);
         items.put(item.getId(), item);
-        return ItemMapper.toDto(item);
+        return item;
     }
 
-    public ItemDto updateItem(ItemDto updates, long itemId, long userId) {
+    public Item updateItem(Item updates, long itemId, long userId) {
         Item item = findItemById(itemId);
 
         User user = userRepositoryInMemory.findUserById(userId);
@@ -52,14 +50,14 @@ public class ItemRepositoryInMemory {
 
         ItemMapper.updateEntity(updates, item);
         items.put(item.getId(), item);
-        return ItemMapper.toDto(item);
+        return item;
     }
 
-    public ItemDto findItemDtoById(long itemId) {
+    public Item findItemDtoById(long itemId) {
         if (items.get(itemId) == null) {
             throw new NotFoundException(String.valueOf(itemId));
         }
-        return ItemMapper.toDto(items.get(itemId));
+        return items.get(itemId);
     }
 
     public Item findItemById(long itemId) {
@@ -69,9 +67,8 @@ public class ItemRepositoryInMemory {
         return items.get(itemId);
     }
 
-    public List<ItemDto> findItemByUserId(long userId) {
+    public List<Item> findItemByUserId(long userId) {
         return items.values().stream()
-                .map(ItemMapper::toDto)
                 .filter(item -> item.getOwner() == userId)
                 .collect(Collectors.toList());
     }
@@ -80,15 +77,14 @@ public class ItemRepositoryInMemory {
         return new ArrayList<>(items.values());
     }
 
-    public List<ItemDto> searchItem(String searchText) {
+    public List<Item> searchItem(String searchText) {
         if (searchText.isBlank()) {
             return new ArrayList<>();
         }
         return getAllItems().stream()
-                .map(ItemMapper::toDto)
                 .filter(item -> item.getName().toLowerCase().contains(searchText)
                         || item.getDescription().toLowerCase().contains(searchText))
-                .filter(ItemDto::getAvailable)
+                .filter(Item::getAvailable)
                 .collect(Collectors.toList());
     }
 }

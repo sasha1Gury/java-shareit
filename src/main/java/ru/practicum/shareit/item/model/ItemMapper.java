@@ -12,7 +12,7 @@ public class ItemMapper {
                 dto.getRequest());
     }
 
-    public static void updateEntity(ItemDto dto, Item item) {
+    public static void updateEntity(Item dto, Item item) {
         if (dto.getName() != null) {
             item.setName(dto.getName());
         }
