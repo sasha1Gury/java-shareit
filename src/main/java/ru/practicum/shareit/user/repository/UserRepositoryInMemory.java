@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Repository
 public class UserRepositoryInMemory {
@@ -25,18 +24,17 @@ public class UserRepositoryInMemory {
         emails = new ArrayList<>();
     }
 
-    public UserDto createUser(UserDto userDto) {
-        User user = UserMapper.toEntity(userDto);
+    public User createUser(User user) {
         if (users.containsValue(user)) {
             throw new NewUserException(user.getEmail());
         }
         user.setId(id++);
         emails.add(user.getEmail());
         users.put(user.getId(), user);
-        return UserMapper.toDto(user);
+        return user;
     }
 
-    public UserDto updateUser(UserDto updates, long userId) {
+    public User updateUser(User updates, long userId) {
         User user = findUserById(userId);
 
         if (emails.contains(updates.getEmail())) {
@@ -45,7 +43,7 @@ public class UserRepositoryInMemory {
 
         UserMapper.updateEntity(updates, user);
         users.put(user.getId(), user);
-        return UserMapper.toDto(user);
+        return user;
     }
 
     public User findUserById(long userId) {
@@ -68,9 +66,7 @@ public class UserRepositoryInMemory {
         users.remove(userId, user);
     }
 
-    public List<UserDto> getAllUsers() {
-        return users.values().stream()
-                .map(UserMapper::toDto)
-                .collect(Collectors.toList());
+    public List<User> getAllUsers() {
+        return new ArrayList<>(users.values());
     }
 }

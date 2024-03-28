@@ -9,7 +9,7 @@ public class UserMapper {
                 dto.getEmail());
     }
 
-    public static void updateEntity(UserDto dto, User user) {
+    public static void updateEntity(User dto, User user) {
         if (dto.getName() != null) {
             user.setName(dto.getName());
         }
