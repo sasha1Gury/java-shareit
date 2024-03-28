@@ -1,6 +1,8 @@
 package ru.practicum.shareit.exception;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -45,5 +47,13 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleThrowable(final Throwable e) {
         return new ErrorResponse("Непредвиденная ошибка " + e.getMessage());
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleValidationException(MethodArgumentNotValidException ex) {
+        FieldError fieldError = ex.getBindingResult().getFieldError();
+        return new ErrorResponse("Ошибка валидации поля '" + fieldError.getField()
+                + "': " + fieldError.getDefaultMessage());
     }
 }
