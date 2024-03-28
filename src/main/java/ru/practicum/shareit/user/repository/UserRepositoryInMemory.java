@@ -2,7 +2,6 @@ package ru.practicum.shareit.user.repository;
 
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.exception.EmailExistException;
 import ru.practicum.shareit.user.exception.NewUserException;
 import ru.practicum.shareit.user.model.User;
@@ -51,13 +50,6 @@ public class UserRepositoryInMemory {
             throw  new NotFoundException(String.valueOf(userId));
         }
         return users.get(userId);
-    }
-
-    public UserDto findUserDtoById(long userId) {
-        if (users.get(userId) == null) {
-            throw  new NotFoundException(String.valueOf(userId));
-        }
-        return UserMapper.toDto(users.get(userId));
     }
 
     public void deleteUser(long userId) {
