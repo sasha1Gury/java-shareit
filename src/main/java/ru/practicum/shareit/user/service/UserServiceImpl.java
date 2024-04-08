@@ -1,45 +1,47 @@
 package ru.practicum.shareit.user.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.model.UserMapper;
-import ru.practicum.shareit.user.repository.UserRepositoryInMemory;
+import ru.practicum.shareit.user.repository.UserRepository;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Qualifier("UserServiceImpl")
+@Transactional
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
-    private final UserRepositoryInMemory userRepositoryInMemory;
+    private final UserRepository userRepository;
 
     @Override
-    public UserDto createUser(UserDto userDto) {
-        User user = UserMapper.toEntity(userDto);
-        return UserMapper.toDto(userRepositoryInMemory.createUser(user));
+    public UserDto createUser(UserDto user) {
+        return null;
     }
 
     @Override
-    public UserDto updateUser(UserDto updatesDto, long userId) {
-        User updates = UserMapper.toEntity(updatesDto);
-        return UserMapper.toDto(userRepositoryInMemory.updateUser(updates, userId));
+    public UserDto updateUser(UserDto updates, long userId) {
+        return null;
     }
 
     @Override
     public UserDto findUserById(long userId) {
-        return UserMapper.toDto(userRepositoryInMemory.findUserById(userId));
+        return null;
     }
 
     @Override
     public void deleteUser(long userId) {
-        userRepositoryInMemory.deleteUser(userId);
+
     }
 
     @Override
     public List<UserDto> getAllUsers() {
-        return userRepositoryInMemory.getAllUsers().stream()
+        return userRepository.findAll()
+                .stream()
                 .map(UserMapper::toDto)
                 .collect(Collectors.toList());
     }
