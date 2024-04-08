@@ -3,7 +3,7 @@ package ru.practicum.shareit.user.model;
 import lombok.*;
 import ru.practicum.shareit.user.validation.CreateUserValidation;
 
-import javax.persistence.Entity;
+import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 
@@ -14,8 +14,11 @@ import javax.validation.constraints.NotBlank;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Table(name = "users")
 public class User {
-    @EqualsAndHashCode.Exclude private long id;
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Exclude
+    private long id;
     @NotBlank(groups = CreateUserValidation.class)
     private String name;
     @Email(groups = CreateUserValidation.class)
