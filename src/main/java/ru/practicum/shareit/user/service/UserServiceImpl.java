@@ -3,7 +3,9 @@ package ru.practicum.shareit.user.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.model.UserMapper;
 import ru.practicum.shareit.user.repository.UserRepository;
 
@@ -19,23 +21,30 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
     @Override
-    public UserDto createUser(UserDto user) {
-        return null;
+    public UserDto createUser(UserDto userDto) {
+        User user = UserMapper.toEntity(userDto);
+        return UserMapper.toDto(userRepository.save(user));
     }
 
     @Override
     public UserDto updateUser(UserDto updates, long userId) {
+        User user = UserMapper.toEntity(updates);
+        userRepository.updateByUserId(userId, user);
         return null;
     }
 
     @Override
     public UserDto findUserById(long userId) {
-        return null;
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            throw new NotFoundException(String.format("User with id %s not found", userId));
+        }
+        return UserMapper.toDto(user);
     }
 
     @Override
     public void deleteUser(long userId) {
-
+        userRepository.deleteById(userId);
     }
 
     @Override
