@@ -13,7 +13,7 @@ import javax.validation.constraints.NotBlank;
 @Entity
 @Table(name = "users")
 public class User {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.AUTO)
     @EqualsAndHashCode.Exclude
     private long id;
     @NotBlank(groups = CreateUserValidation.class)
