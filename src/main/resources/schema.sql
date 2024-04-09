@@ -6,6 +6,14 @@ CREATE TABLE IF NOT EXISTS users (
     CONSTRAINT UQ_USER_EMAIL UNIQUE (email)
 );
 
+CREATE TABLE IF NOT EXISTS item_request (
+    id BIGINT GENERATED ALWAYS AS IDENTITY NOT NULL,
+    description TEXT,
+    owner BIGINT,
+    CONSTRAINT pk_item_request PRIMARY KEY (id),
+    CONSTRAINT fk_request_owner FOREIGN KEY (owner) REFERENCES users(id)
+);
+
 CREATE TABLE IF NOT EXISTS items (
     id BIGINT GENERATED ALWAYS AS IDENTITY NOT NULL,
     name VARCHAR(255) NOT NULL,
@@ -16,12 +24,4 @@ CREATE TABLE IF NOT EXISTS items (
     CONSTRAINT pk_item PRIMARY KEY (id),
     CONSTRAINT fk_owner_to_user FOREIGN KEY (owner) REFERENCES users(id),
     CONSTRAINT fk_request FOREIGN KEY (owner) REFERENCES item_request(id)
-);
-
-CREATE TABLE IF NOT EXISTS item_request (
-    id BIGINT GENERATED ALWAYS AS IDENTITY NOT NULL,
-    description TEXT,
-    owner BIGINT,
-    CONSTRAINT pk_item_request PRIMARY KEY (id),
-    CONSTRAINT fk_request_owner FOREIGN KEY (owner) REFERENCES users(id)
 );
