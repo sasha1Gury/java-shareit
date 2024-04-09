@@ -25,3 +25,15 @@ CREATE TABLE IF NOT EXISTS items (
     CONSTRAINT fk_owner_to_user FOREIGN KEY (owner) REFERENCES users(id),
     CONSTRAINT fk_request FOREIGN KEY (owner) REFERENCES item_request(id)
 );
+
+CREATE TABLE IF NOT EXISTS bookings (
+    id BIGINT GENERATED ALWAYS AS IDENTITY NOT NULL,
+    start_time TIMESTAMP,
+    end_time TIMESTAMP,
+    item_id BIGINT,
+    booker_id BIGINT,
+    status VARCHAR(255),
+    CONSTRAINT pk_booking PRIMARY KEY (id),
+    CONSTRAINT fk_item FOREIGN KEY (item_id) REFERENCES items(id),
+    CONSTRAINT fk_booker FOREIGN KEY (booker_id) REFERENCES users(id)
+);
