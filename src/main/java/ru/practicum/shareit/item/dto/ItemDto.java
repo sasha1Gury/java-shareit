@@ -3,6 +3,8 @@ package ru.practicum.shareit.item.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import ru.practicum.shareit.item.validation.CreateItemValidation;
+import ru.practicum.shareit.request.model.ItemRequest;
+import ru.practicum.shareit.user.model.User;
 
 import javax.validation.constraints.NotBlank;
 
@@ -18,6 +20,6 @@ public class ItemDto {
     @NotBlank(groups = CreateItemValidation.class)
     private String description;
     private Boolean available;
-    private long owner;
-    private String request;
+    private User owner;
+    private ItemRequest request;
 }
