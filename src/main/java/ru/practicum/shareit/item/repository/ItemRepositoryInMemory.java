@@ -31,7 +31,7 @@ public class ItemRepositoryInMemory {
         if (user == null) {
             throw new NotFoundException(String.valueOf(userId));
         }
-        item.setOwner(userId);
+        item.setOwner(user);
         if (items.containsValue(item)) {
             throw new NewItemException();
         }
@@ -44,7 +44,7 @@ public class ItemRepositoryInMemory {
         Item item = findItemById(itemId);
 
         User user = userRepositoryInMemory.findUserById(userId);
-        if (item.getOwner() != user.getId()) {
+        if (!item.getOwner().equals(user)) {
             throw new OwnerException();
         }
 
@@ -68,8 +68,9 @@ public class ItemRepositoryInMemory {
     }
 
     public List<Item> findItemByUserId(long userId) {
+        User owner = userRepositoryInMemory.findUserById(userId);
         return items.values().stream()
-                .filter(item -> item.getOwner() == userId)
+                .filter(item -> item.getOwner().equals(owner))
                 .collect(Collectors.toList());
     }
 
