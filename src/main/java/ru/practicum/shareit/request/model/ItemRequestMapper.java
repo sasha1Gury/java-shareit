@@ -6,14 +6,12 @@ public class ItemRequestMapper {
     public static ItemRequest toEntity(ItemRequestDto dto) {
         return new ItemRequest(dto.getId(),
                 dto.getDescription(),
-                dto.getOwner(),
-                dto.getCreated());
+                dto.getOwner());
     }
 
     public static ItemRequestDto toDto(ItemRequest itemRequest) {
         return new ItemRequestDto(itemRequest.getId(),
                 itemRequest.getDescription(),
-                itemRequest.getOwner(),
-                itemRequest.getCreated());
+                itemRequest.getOwner());
     }
 }
