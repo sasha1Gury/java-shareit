@@ -35,6 +35,9 @@ public class BookingServiceImpl implements BookingService {
         if (!item.getAvailable()) {
             throw new AvailableException();
         }
+        if (booker.getId() == item.getOwner().getId()) {
+            throw new NotFoundException(String.valueOf(bookingDto.getItemId()));
+        }
         if (booking.getEnd().isBefore(booking.getStart()) || booking.getEnd().isEqual(booking.getStart())) {
             throw new TimestampException();
         }
