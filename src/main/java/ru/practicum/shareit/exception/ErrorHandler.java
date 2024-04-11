@@ -10,9 +10,12 @@ import ru.practicum.shareit.booking.exception.AvailableException;
 import ru.practicum.shareit.booking.exception.TimestampException;
 import ru.practicum.shareit.booking.exception.UnsupportedStateException;
 import ru.practicum.shareit.item.exception.AvailableNotInitInItem;
+import ru.practicum.shareit.item.exception.ItemOwnerException;
 import ru.practicum.shareit.item.exception.OwnerException;
 import ru.practicum.shareit.user.exception.EmailExistException;
 import ru.practicum.shareit.user.exception.NewUserException;
+
+import javax.validation.ValidationException;
 
 @RestControllerAdvice
 public class ErrorHandler {
@@ -54,6 +57,12 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleItemOwnerException(final ItemOwnerException e) {
+        return new ErrorResponse(e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleUnsupportedStateException(final UnsupportedStateException e) {
         return new ErrorResponse(e.getMessage());
     }
@@ -72,9 +81,16 @@ public class ErrorHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleValidationException(MethodArgumentNotValidException ex) {
+    public ErrorResponse handleMethodValidationException(MethodArgumentNotValidException ex) {
         FieldError fieldError = ex.getBindingResult().getFieldError();
         return new ErrorResponse("Ошибка валидации поля '" + fieldError.getField()
                 + "': " + fieldError.getDefaultMessage());
+    }
+
+    @ExceptionHandler(ValidationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleValidationException(ValidationException ex) {
+        //FieldError fieldError = ex.getBindingResult().getFieldError();
+        return new ErrorResponse("Ошибка валидации поля");
     }
 }
