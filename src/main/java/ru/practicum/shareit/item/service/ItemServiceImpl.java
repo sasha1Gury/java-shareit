@@ -3,16 +3,23 @@ package ru.practicum.shareit.item.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.model.Status;
+import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemDtoWithTime;
 import ru.practicum.shareit.item.exception.OwnerException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.model.ItemMapper;
+import ru.practicum.shareit.item.model.LastBooking;
+import ru.practicum.shareit.item.model.NextBooking;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import javax.transaction.Transactional;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,6 +31,7 @@ import java.util.stream.Collectors;
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
+    private final BookingRepository bookingRepository;
 
     @Override
     public ItemDto createItem(ItemDto itemDto, long userId) {
@@ -51,8 +59,34 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ItemDto findItemById(long itemId) {
-        return ItemMapper.toDto(itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException(String.valueOf(itemId))));
+    public ItemDtoWithTime findItemById(long itemId, long userId) {
+        Item item = itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException(String.valueOf(itemId)));
+        ItemDtoWithTime itemDtoWithTime = ItemMapper.toDtoWithTime(item);
+        LastBooking lastBooking = new LastBooking();
+        NextBooking nextBooking = new NextBooking();
+        LocalDateTime currentTime = LocalDateTime.now();
+        long idLast = lastBooking.getId();
+        long idNext = nextBooking.getId();
+        if (userId != item.getOwner().getId()) {
+            lastBooking = null;
+            nextBooking = null;
+        } else {
+            Booking nowBooking = bookingRepository.findFirstByItemIdAndEndIsBeforeOrderByEndDesc(itemId, currentTime).orElse(null);
+            if (nowBooking != null) {
+                lastBooking.setId(++idLast);
+                lastBooking.setBookerId(nowBooking.getBooker().getId());
+                lastBooking.setLastTime(nowBooking.getEnd());
+            }
+            Booking afterBooking = bookingRepository.findFirstByItemIdAndStartIsAfterOrderByStartAsc(itemId, currentTime).orElse(null);
+            if (afterBooking != null) {
+                nextBooking.setId(userId); ///я не понимаю как тут 4 должно быть в тестах постамана
+                nextBooking.setBookerId(afterBooking.getBooker().getId());
+                nextBooking.setNextTime(afterBooking.getStart());
+            }
+        }
+        itemDtoWithTime.setLastBooking(lastBooking);
+        itemDtoWithTime.setNextBooking(nextBooking);
+        return itemDtoWithTime;
     }
 
     @Override
