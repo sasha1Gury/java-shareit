@@ -3,6 +3,8 @@ package ru.practicum.shareit.item.model;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoWithTime;
 
+import java.util.ArrayList;
+
 public class ItemMapper {
     public static Item toEntity(ItemDto dto) {
         return new Item(dto.getId(),
@@ -42,6 +44,7 @@ public class ItemMapper {
                 itemDto.getOwner(),
                 itemDto.getRequest(),
                 new LastBooking(),
-                new NextBooking());
+                new NextBooking(),
+                new ArrayList<>());
     }
 }
