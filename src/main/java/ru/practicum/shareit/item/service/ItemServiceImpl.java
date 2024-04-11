@@ -84,7 +84,7 @@ public class ItemServiceImpl implements ItemService {
             lastBooking.setId(nowBooking.getId());
             lastBooking.setBookerId(nowBooking.getBooker().getId());
             lastBooking.setLastTime(nowBooking.getEnd());
-        }
+        } else lastBooking = null;
         return lastBooking;
     }
 
@@ -95,17 +95,33 @@ public class ItemServiceImpl implements ItemService {
             nextBooking.setId(afterBooking.getId());
             nextBooking.setBookerId(afterBooking.getBooker().getId());
             nextBooking.setNextTime(afterBooking.getStart());
-        }
+        } else nextBooking = null;
+
         return nextBooking;
     }
 
     @Override
-    public List<ItemDto> findItemByUserId(long userId) {
+    public List<ItemDtoWithTime> findItemByUserId(long userId) {
         User owner = userRepository.findById(userId).orElseThrow(() -> new NotFoundException(String.valueOf(userId)));
-        return itemRepository.findAllByOwner(owner)
-                .stream()
-                .map(ItemMapper::toDto)
-                .collect(Collectors.toList());
+        List<Item> items = itemRepository.findAllByOwner(owner);
+
+        List<ItemDtoWithTime> itemDtoWithTimeList = new ArrayList<>();
+
+        LocalDateTime currentTime = LocalDateTime.now();
+
+        for (Item item : items) {
+            ItemDtoWithTime itemDtoWithTime = ItemMapper.toDtoWithTime(item);
+
+            LastBooking lastBooking = calculateLastBooking(item.getId(), currentTime);
+            NextBooking nextBooking = calculateNextBooking(item.getId(), currentTime);
+
+            itemDtoWithTime.setLastBooking(lastBooking);
+            itemDtoWithTime.setNextBooking(nextBooking);
+
+            itemDtoWithTimeList.add(itemDtoWithTime);
+        }
+
+        return itemDtoWithTimeList;
     }
 
     @Override
