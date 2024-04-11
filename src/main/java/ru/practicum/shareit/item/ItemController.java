@@ -46,7 +46,7 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemDto> findItemByUserId(@RequestHeader("X-Sharer-User-Id") long userId) {
+    public List<ItemDtoWithTime> findItemByUserId(@RequestHeader("X-Sharer-User-Id") long userId) {
         return itemService.findItemByUserId(userId);
     }
 
