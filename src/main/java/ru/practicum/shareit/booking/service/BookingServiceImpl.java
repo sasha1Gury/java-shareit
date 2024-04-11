@@ -16,6 +16,7 @@ import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -76,13 +77,14 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public List<BookingDto> getUserBookings(String state, long userId) {
         User booker = userRepository.findById(userId).orElseThrow(() -> new NotFoundException(String.valueOf(userId)));
+        LocalDateTime currentTime = LocalDateTime.now();
 
         switch (state) {
             case "CURRENT":
-                return bookingRepository.findCurrentBookingsByBookerOrderByStartDesc(booker).stream()
+                return bookingRepository.findAllByBookerAndStartBeforeAndEndAfterOrderByStartDesc(booker, currentTime, currentTime).stream()
                         .map(BookingMapper::toDto).collect(Collectors.toList());
             case "PAST":
-                return bookingRepository.findPastBookingsByBookerOrderByStartDesc(booker).stream()
+                return bookingRepository.findAllByBookerAndEndIsBeforeOrderByEndDesc(booker, currentTime).stream()
                         .map(BookingMapper::toDto).collect(Collectors.toList());
             case "FUTURE":
                 return bookingRepository.findFutureBookingsByBookerOrderByStartDesc(booker).stream()
@@ -104,13 +106,14 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public List<BookingDto> getOwnerBookings(String state, long userId) {
         User owner = userRepository.findById(userId).orElseThrow(() -> new NotFoundException(String.valueOf(userId)));
+        LocalDateTime currentTime = LocalDateTime.now();
 
         switch (state) {
             case "CURRENT":
-                return bookingRepository.findCurrentBookingsByItemOwnerOrderByStartDesc(owner).stream()
+                return bookingRepository.findAllByItemOwnerAndStartBeforeAndEndAfterOrderByStartDesc(owner, currentTime, currentTime).stream()
                         .map(BookingMapper::toDto).collect(Collectors.toList());
             case "PAST":
-                return bookingRepository.findPastBookingsByItemOwnerOrderByStartDesc(owner).stream()
+                return bookingRepository.findAllByItemOwnerAndEndIsBeforeOrderByEndDesc(owner, currentTime).stream()
                         .map(BookingMapper::toDto).collect(Collectors.toList());
             case "FUTURE":
                 return bookingRepository.findFutureBookingsByItemOwnerOrderByStartDesc(owner).stream()
