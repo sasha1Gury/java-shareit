@@ -62,31 +62,41 @@ public class ItemServiceImpl implements ItemService {
     public ItemDtoWithTime findItemById(long itemId, long userId) {
         Item item = itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException(String.valueOf(itemId)));
         ItemDtoWithTime itemDtoWithTime = ItemMapper.toDtoWithTime(item);
-        LastBooking lastBooking = new LastBooking();
-        NextBooking nextBooking = new NextBooking();
-        LocalDateTime currentTime = LocalDateTime.now();
-        long idLast = lastBooking.getId();
-        long idNext = nextBooking.getId();
+        LastBooking lastBooking;
+        NextBooking nextBooking;
         if (userId != item.getOwner().getId()) {
             lastBooking = null;
             nextBooking = null;
         } else {
-            Booking nowBooking = bookingRepository.findFirstByItemIdAndEndIsBeforeOrderByEndDesc(itemId, currentTime).orElse(null);
-            if (nowBooking != null) {
-                lastBooking.setId(++idLast);
-                lastBooking.setBookerId(nowBooking.getBooker().getId());
-                lastBooking.setLastTime(nowBooking.getEnd());
-            }
-            Booking afterBooking = bookingRepository.findFirstByItemIdAndStartIsAfterOrderByStartAsc(itemId, currentTime).orElse(null);
-            if (afterBooking != null) {
-                nextBooking.setId(userId); ///я не понимаю как тут 4 должно быть в тестах постамана
-                nextBooking.setBookerId(afterBooking.getBooker().getId());
-                nextBooking.setNextTime(afterBooking.getStart());
-            }
+            LocalDateTime currentTime = LocalDateTime.now();
+            lastBooking = calculateLastBooking(itemId, currentTime);
+            nextBooking = calculateNextBooking(itemId, currentTime);
         }
         itemDtoWithTime.setLastBooking(lastBooking);
         itemDtoWithTime.setNextBooking(nextBooking);
         return itemDtoWithTime;
+    }
+
+    private LastBooking calculateLastBooking(long itemId, LocalDateTime currentTime) {
+        LastBooking lastBooking = new LastBooking();
+        Booking nowBooking = bookingRepository.findFirstByItemIdAndEndIsBeforeOrderByEndDesc(itemId, currentTime).orElse(null);
+        if (nowBooking != null) {
+            lastBooking.setId(nowBooking.getId());
+            lastBooking.setBookerId(nowBooking.getBooker().getId());
+            lastBooking.setLastTime(nowBooking.getEnd());
+        }
+        return lastBooking;
+    }
+
+    private NextBooking calculateNextBooking(long itemId, LocalDateTime currentTime) {
+        NextBooking nextBooking = new NextBooking();
+        Booking afterBooking = bookingRepository.findFirstByItemIdAndStartIsAfterOrderByStartAsc(itemId, currentTime).orElse(null);
+        if (afterBooking != null) {
+            nextBooking.setId(afterBooking.getId());
+            nextBooking.setBookerId(afterBooking.getBooker().getId());
+            nextBooking.setNextTime(afterBooking.getStart());
+        }
+        return nextBooking;
     }
 
     @Override
