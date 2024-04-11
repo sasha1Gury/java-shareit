@@ -88,10 +88,10 @@ public class BookingServiceImpl implements BookingService {
                 return bookingRepository.findFutureBookingsByBookerOrderByStartDesc(booker).stream()
                         .map(BookingMapper::toDto).collect(Collectors.toList());
             case "WAITING":
-                return bookingRepository.findWaitingBookingsByBookerOrderByStartDesc(booker).stream()
+                return bookingRepository.findAllByBookerAndStatus(booker, Status.WAITING).stream()
                         .map(BookingMapper::toDto).collect(Collectors.toList());
             case "REJECTED":
-                return bookingRepository.findRejectedBookingsByBookerOrderByStartDesc(booker).stream()
+                return bookingRepository.findAllByBookerAndStatus(booker, Status.REJECTED).stream()
                         .map(BookingMapper::toDto).collect(Collectors.toList());
             case "ALL":
                 return bookingRepository.findAllBookingsByBookerOrderByStartDesc(booker).stream()
@@ -116,10 +116,10 @@ public class BookingServiceImpl implements BookingService {
                 return bookingRepository.findFutureBookingsByItemOwnerOrderByStartDesc(owner).stream()
                         .map(BookingMapper::toDto).collect(Collectors.toList());
             case "WAITING":
-                return bookingRepository.findWaitingBookingsByItemOwnerOrderByStartDesc(owner).stream()
+                return bookingRepository.findAllByItemOwnerAndStatus(owner, Status.WAITING).stream()
                         .map(BookingMapper::toDto).collect(Collectors.toList());
             case "REJECTED":
-                return bookingRepository.findRejectedBookingsByItemOwnerOrderByStartDesc(owner).stream()
+                return bookingRepository.findAllByItemOwnerAndStatus(owner, Status.REJECTED).stream()
                         .map(BookingMapper::toDto).collect(Collectors.toList());
             case "ALL":
                 return bookingRepository.findAllBookingsByItemOwnerOrderByStartDesc(owner).stream()
