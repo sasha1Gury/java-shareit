@@ -36,9 +36,9 @@ public class ItemServiceInMemoryImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> findItemByUserId(long userId) {
+    public List<ItemDtoWithTime> findItemByUserId(long userId) {
         return itemRepositoryInMemory.findItemByUserId(userId).stream()
-                .map(ItemMapper::toDto)
+                .map(ItemMapper::toDtoWithTime)
                 .collect(Collectors.toList());
     }
 
