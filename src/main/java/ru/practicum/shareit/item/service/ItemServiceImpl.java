@@ -87,7 +87,8 @@ public class ItemServiceImpl implements ItemService {
 
     private LastBooking calculateLastBooking(long itemId, LocalDateTime currentTime) {
         LastBooking lastBooking = new LastBooking();
-        Booking nowBooking = bookingRepository.findFirstByItemIdAndEndIsBeforeOrderByEndDesc(itemId, currentTime).orElse(null);
+        Booking nowBooking = bookingRepository.findFirstByItemIdAndEndIsBeforeAndStatusOrderByEndDesc(itemId,
+                currentTime, Status.APPROVED).orElse(null);
         if (nowBooking != null) {
             lastBooking.setId(nowBooking.getId());
             lastBooking.setBookerId(nowBooking.getBooker().getId());
@@ -98,7 +99,8 @@ public class ItemServiceImpl implements ItemService {
 
     private NextBooking calculateNextBooking(long itemId, LocalDateTime currentTime) {
         NextBooking nextBooking = new NextBooking();
-        Booking afterBooking = bookingRepository.findFirstByItemIdAndStartIsAfterOrderByStartAsc(itemId, currentTime).orElse(null);
+        Booking afterBooking = bookingRepository.findFirstByItemIdAndStartIsAfterAndStatusOrderByStartAsc(itemId,
+                currentTime, Status.APPROVED).orElse(null);
         if (afterBooking != null) {
             nextBooking.setId(afterBooking.getId());
             nextBooking.setBookerId(afterBooking.getBooker().getId());
