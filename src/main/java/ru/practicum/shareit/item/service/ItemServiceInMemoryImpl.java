@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemDtoWithTime;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.model.ItemMapper;
 import ru.practicum.shareit.item.repository.ItemRepositoryInMemory;
@@ -30,8 +31,8 @@ public class ItemServiceInMemoryImpl implements ItemService {
     }
 
     @Override
-    public ItemDto findItemById(long itemId) {
-        return ItemMapper.toDto(itemRepositoryInMemory.findItemDtoById(itemId));
+    public ItemDtoWithTime findItemById(long itemId, long userId) {
+        return ItemMapper.toDtoWithTime(itemRepositoryInMemory.findItemDtoById(itemId));
     }
 
     @Override
