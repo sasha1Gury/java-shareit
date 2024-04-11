@@ -87,8 +87,11 @@ public class ItemServiceImpl implements ItemService {
 
     private LastBooking calculateLastBooking(long itemId, LocalDateTime currentTime) {
         LastBooking lastBooking = new LastBooking();
-        Booking nowBooking = bookingRepository.findFirstByItemIdAndEndIsBeforeAndStatusOrderByEndDesc(itemId,
-                currentTime, Status.APPROVED).orElse(null);
+        Booking nowBooking = bookingRepository.findFirstByItemIdAndEndIsBeforeAndStatusOrderByEndDesc(
+                itemId, currentTime, Status.APPROVED)
+                .orElse(bookingRepository.findFirstByItemIdAndStartBeforeAndEndAfterAndStatusOrderByStartDesc(itemId,
+                                currentTime, currentTime, Status.APPROVED)
+                                .orElse(null));
         if (nowBooking != null) {
             lastBooking.setId(nowBooking.getId());
             lastBooking.setBookerId(nowBooking.getBooker().getId());
