@@ -4,6 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.item.Comment.dto.CommentDto;
+import ru.practicum.shareit.item.Comment.model.Comment;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoWithTime;
 import ru.practicum.shareit.item.service.ItemService;
@@ -54,5 +56,12 @@ public class ItemController {
     public List<ItemDto> searchItems(@RequestParam("text") String search) {
         search = search.toLowerCase();
         return itemService.searchItem(search);
+    }
+
+    @PostMapping("/{itemId}/comment")
+    public CommentDto createComment(@PathVariable long itemId,
+                                    @RequestBody CommentDto comment,
+                                    @RequestHeader("X-Sharer-User-Id") long userId) {
+        return itemService.createComment(itemId, userId, comment);
     }
 }
