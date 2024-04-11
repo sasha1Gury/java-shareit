@@ -7,8 +7,13 @@ import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.Status;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.item.Comment.dto.CommentDto;
+import ru.practicum.shareit.item.Comment.model.Comment;
+import ru.practicum.shareit.item.Comment.model.CommentMapper;
+import ru.practicum.shareit.item.Comment.repository.CommentRepository;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoWithTime;
+import ru.practicum.shareit.item.exception.ItemOwnerException;
 import ru.practicum.shareit.item.exception.OwnerException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.model.ItemMapper;
@@ -22,6 +27,7 @@ import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,6 +38,7 @@ public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
+    private final CommentRepository commentRepository;
 
     @Override
     public ItemDto createItem(ItemDto itemDto, long userId) {
@@ -74,6 +81,7 @@ public class ItemServiceImpl implements ItemService {
         }
         itemDtoWithTime.setLastBooking(lastBooking);
         itemDtoWithTime.setNextBooking(nextBooking);
+        itemDtoWithTime.setComments(commentRepository.findAllByItem(item));
         return itemDtoWithTime;
     }
 
@@ -117,6 +125,7 @@ public class ItemServiceImpl implements ItemService {
 
             itemDtoWithTime.setLastBooking(lastBooking);
             itemDtoWithTime.setNextBooking(nextBooking);
+            itemDtoWithTime.setComments(commentRepository.findAllByItem(item));
 
             itemDtoWithTimeList.add(itemDtoWithTime);
         }
@@ -134,5 +143,24 @@ public class ItemServiceImpl implements ItemService {
                 .filter(Item::getAvailable)
                 .map(ItemMapper::toDto)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public CommentDto createComment(long itemId, long userId, CommentDto commentDto) {
+        Item item = itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException(String.valueOf(itemId)));
+        User owner = userRepository.findById(userId).orElseThrow(() -> new NotFoundException(String.valueOf(userId)));
+        Comment comment = CommentMapper.toEntity(commentDto);
+        List<Booking> authorBookings = bookingRepository.findByBooker_Id(userId);
+        Optional<Booking> booking = authorBookings.stream()
+                .findFirst().filter(b -> b.getBooker().getId() == userId
+                        && !b.getStatus().equals(Status.REJECTED)
+                        && !b.getStart().isAfter(LocalDateTime.now()));
+        if (booking.isEmpty()) {
+            throw new ItemOwnerException();
+        }
+        comment.setItem(item);
+        comment.setAuthorName(owner.getName());
+        comment.setCreated(LocalDateTime.now());
+        return CommentMapper.toDto(commentRepository.save(comment));
     }
 }

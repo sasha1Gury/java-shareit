@@ -3,6 +3,8 @@ package ru.practicum.shareit.item.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.item.Comment.dto.CommentDto;
+import ru.practicum.shareit.item.Comment.model.Comment;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoWithTime;
 import ru.practicum.shareit.item.model.Item;
@@ -47,5 +49,10 @@ public class ItemServiceInMemoryImpl implements ItemService {
         return itemRepositoryInMemory.searchItem(text).stream()
                 .map(ItemMapper::toDto)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public CommentDto createComment(long itemId, long userId, CommentDto comment) {
+        return new CommentDto();
     }
 }
