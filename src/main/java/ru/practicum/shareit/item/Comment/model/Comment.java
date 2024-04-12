@@ -20,7 +20,6 @@ public class Comment {
     private Long id;
 
     @NotBlank
-    @Column(columnDefinition = "TEXT", nullable = false)
     private String text;
 
     @ManyToOne
@@ -30,7 +29,7 @@ public class Comment {
     @Column(name = "author_name")
     private String authorName;
 
-    @Column(nullable = false, updatable = false, insertable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    @Column(name = "created")
     private LocalDateTime created;
 
 }

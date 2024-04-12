@@ -23,15 +23,14 @@ import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
-import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 @Qualifier("ItemServiceImpl")
 public class ItemServiceImpl implements ItemService {
@@ -135,7 +134,9 @@ public class ItemServiceImpl implements ItemService {
             itemDtoWithTimeList.add(itemDtoWithTime);
         }
 
-        return itemDtoWithTimeList;
+        return itemDtoWithTimeList.stream()
+                .sorted(Comparator.comparing(ItemDtoWithTime::getId))
+                .collect(Collectors.toList());
     }
 
     @Override
