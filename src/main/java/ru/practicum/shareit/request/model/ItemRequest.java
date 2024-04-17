@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 
 /**
  * TODO Sprint add-item-requests.
@@ -16,8 +17,9 @@ import javax.persistence.*;
 @Entity
 @Table(name = "item_request")
 public class ItemRequest {
-    @Id @GeneratedValue(strategy = GenerationType.AUTO)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+    @NotBlank
     private String description;
     @ManyToOne
     @JoinColumn(name = "owner")
