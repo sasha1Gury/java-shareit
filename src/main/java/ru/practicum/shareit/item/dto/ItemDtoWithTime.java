@@ -6,7 +6,6 @@ import ru.practicum.shareit.item.Comment.model.Comment;
 import ru.practicum.shareit.item.model.LastBooking;
 import ru.practicum.shareit.item.model.NextBooking;
 import ru.practicum.shareit.item.validation.CreateItemValidation;
-import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 
 import javax.validation.constraints.NotBlank;
@@ -24,7 +23,7 @@ public class ItemDtoWithTime {
     @NotNull(groups = CreateItemValidation.class)
     private Boolean available;
     private User owner;
-    private ItemRequest request;
+    private Long requestId;
     private LastBooking lastBooking;
     private NextBooking nextBooking;
     private List<Comment> comments;
