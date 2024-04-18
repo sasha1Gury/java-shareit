@@ -2,6 +2,8 @@ package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.Status;
@@ -121,9 +123,16 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDtoWithTime> findItemByUserId(long userId) {
+    public List<ItemDtoWithTime> findItemByUserId(long userId, Integer from, Integer size) {
         User owner = userRepository.findById(userId).orElseThrow(() -> new NotFoundException(String.valueOf(userId)));
-        List<Item> items = itemRepository.findAllByOwner(owner);
+        List<Item> items;
+        if (from == null || size == null) {
+            items = itemRepository.findAllByOwner(owner);
+        } else {
+            Pageable page = PageRequest.of(from, size);
+            items = itemRepository.findAllByOwner(page, owner).stream()
+                    .collect(Collectors.toList());
+        }
 
         List<ItemDtoWithTime> itemDtoWithTimeList = new ArrayList<>();
 
@@ -148,15 +157,24 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> searchItem(String text) {
+    public List<ItemDto> searchItem(String text, Integer from, Integer size) {
         if (text.isBlank()) {
             return new ArrayList<>();
         }
-        return itemRepository.search(text)
-                .stream()
-                .filter(Item::getAvailable)
-                .map(ItemMapper::toDto)
-                .collect(Collectors.toList());
+        if (from == null || size == null) {
+            return itemRepository.search(text)
+                    .stream()
+                    .filter(Item::getAvailable)
+                    .map(ItemMapper::toDto)
+                    .collect(Collectors.toList());
+        } else {
+            Pageable page = PageRequest.of(from, size);
+            return itemRepository.search(page, text)
+                    .stream()
+                    .filter(Item::getAvailable)
+                    .map(ItemMapper::toDto)
+                    .collect(Collectors.toList());
+        }
     }
 
     @Override
