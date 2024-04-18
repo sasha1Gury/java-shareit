@@ -12,7 +12,7 @@ public class ItemMapper {
                 dto.getDescription(),
                 dto.getAvailable(),
                 dto.getOwner(),
-                dto.getRequest());
+                null);
     }
 
     public static void updateEntity(Item dto, Item item) {
@@ -28,21 +28,29 @@ public class ItemMapper {
     }
 
     public static ItemDto toDto(Item itemDto) {
+        Long requestId = null;
+        if (itemDto.getRequest() != null) {
+            requestId = itemDto.getRequest().getId();
+        }
         return new ItemDto(itemDto.getId(),
                 itemDto.getName(),
                 itemDto.getDescription(),
                 itemDto.getAvailable(),
                 itemDto.getOwner(),
-                itemDto.getRequest());
+                requestId);
     }
 
     public static ItemDtoWithTime toDtoWithTime(Item itemDto) {
+        Long requestId = null;
+        if (itemDto.getRequest() != null) {
+            requestId = itemDto.getRequest().getId();
+        }
         return new ItemDtoWithTime(itemDto.getId(),
                 itemDto.getName(),
                 itemDto.getDescription(),
                 itemDto.getAvailable(),
                 itemDto.getOwner(),
-                itemDto.getRequest(),
+                requestId,
                 new LastBooking(),
                 new NextBooking(),
                 new ArrayList<>());
