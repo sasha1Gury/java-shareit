@@ -7,6 +7,7 @@ import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import java.time.LocalDateTime;
 
 /**
  * TODO Sprint add-item-requests.
@@ -24,4 +25,6 @@ public class ItemRequest {
     @ManyToOne
     @JoinColumn(name = "owner")
     private User owner;
+    @Column(name = "created")
+    private LocalDateTime created;
 }
