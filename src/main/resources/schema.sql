@@ -8,8 +8,9 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE TABLE IF NOT EXISTS item_request (
     id BIGINT GENERATED ALWAYS AS IDENTITY NOT NULL,
-    description TEXT,
+    description TEXT NOT NULL,
     owner BIGINT,
+    created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
     CONSTRAINT pk_item_request PRIMARY KEY (id),
     CONSTRAINT fk_request_owner FOREIGN KEY (owner) REFERENCES users(id)
 );
