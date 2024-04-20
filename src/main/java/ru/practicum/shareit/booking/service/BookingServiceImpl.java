@@ -33,14 +33,14 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public BookingDto createBookingRequest(BookingDto bookingDto, Long userId) {
         Booking booking = BookingMapper.toEntity(bookingDto);
-        User booker = userRepository.findById(userId).orElseThrow(() -> new NotFoundException(String.valueOf(userId)));
+        User booker = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("user - " + userId));
         Item item = itemRepository.findById(bookingDto.getItemId()).orElseThrow(() -> new NotFoundException(
-                String.valueOf(bookingDto.getItemId())));
+                "item - " + bookingDto.getItemId()));
         if (!item.getAvailable()) {
             throw new AvailableException();
         }
         if (booker.getId() == item.getOwner().getId()) {
-            throw new NotFoundException(String.valueOf(bookingDto.getItemId()));
+            throw new NotFoundException("совпадают owner и booker - " + bookingDto.getItemId());
         }
         if (booking.getEnd().isBefore(booking.getStart()) || booking.getEnd().isEqual(booking.getStart())) {
             throw new TimestampException();
