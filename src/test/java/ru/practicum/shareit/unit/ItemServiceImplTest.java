@@ -3,8 +3,8 @@ package ru.practicum.shareit.unit;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.context.SpringBootTest;
+
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.item.Comment.repository.CommentRepository;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -17,7 +17,6 @@ import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Optional;
 
@@ -26,8 +25,10 @@ import static org.mockito.Mockito.*;
 
 @SpringBootTest
 public class ItemServiceImplTest {
+
     @InjectMocks
     private ItemServiceImpl itemService;
+
     @Mock
     private ItemRepository itemRepository;
     @Mock
@@ -38,38 +39,46 @@ public class ItemServiceImplTest {
     private CommentRepository commentRepository;
     @Mock
     private ItemRequestRepository itemRequestRepository;
-    long id = 2;
+
+    private long itemId = 2;
+    private long userId = 1;
 
     @Test
     public void findItemById() {
-        //MockitoAnnotations.initMocks(this);
-        LocalDateTime currentTime = LocalDateTime.of(2024, 4, 21, 12, 0);
-        User mockUser = new User(); // Set up a mock user
-        mockUser.setId(id);
+
+        // Set up a mock user
+        User mockUser = new User();
+        mockUser.setId(userId);
         mockUser.setName("testName");
         mockUser.setEmail("testEmail");
+
+        // Set up a mock item
         ItemDto itemDto = new ItemDto(
-                23,                  // id
-                "Sample Name",      // name
-                "Sample Description", // description
-                true,               // available
-                mockUser,         // owner
-                null                // requestId
+                itemId,
+                "Sample Name",
+                "Sample Description",
+                true,
+                mockUser,
+                null
         );
         Item item = ItemMapper.toEntity(itemDto);
-        when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
+
+        // Set up mock repository responses
+        when(itemRepository.findById(itemId)).thenReturn(Optional.of(item));
         when(commentRepository.findAllByItem(item)).thenReturn(new ArrayList<>());
 
-        ItemDtoWithTime result = itemService.findItemById(item.getId(), mockUser.getId());
+        // Call the method under test
+        ItemDtoWithTime result = itemService.findItemById(itemId, userId);
+
         // Assertions
         assertNotNull(result);
-        assertEquals(item.getId(), result.getId());
+        assertEquals(itemId, result.getId());
         assertNull(result.getLastBooking());
         assertNull(result.getNextBooking());
         assertTrue(result.getComments().isEmpty());
 
         // Verify interactions
-        verify(itemRepository, times(1)).findById(item.getId());
+        verify(itemRepository, times(1)).findById(itemId);
         verify(commentRepository, times(1)).findAllByItem(item);
     }
 }
