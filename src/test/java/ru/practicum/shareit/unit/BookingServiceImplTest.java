@@ -100,7 +100,7 @@ class BookingServiceImplTest {
     public void testUpdateBookingApproval() {
         // Arrange
         Long bookingId = 1L;
-        Long userId = 1L;
+        Long userId = mockUser.getId();
         boolean approved = true;
         Booking booking = BookingMapper.toEntity(bookingDto);
 
@@ -108,7 +108,7 @@ class BookingServiceImplTest {
         booker.setId(userId);
 
         when(bookingRepository.findById(anyLong())).thenReturn(Optional.of(booking));
-        when(userRepository.findById(anyLong())).thenReturn(Optional.of(booker));
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(mockUser));
         when(bookingRepository.save(any())).thenReturn(booking);
 
         // Act
@@ -117,5 +117,13 @@ class BookingServiceImplTest {
         // Assert
         assertEquals(approved ? Status.APPROVED : Status.REJECTED, booking.getStatus());
         verify(bookingRepository, times(1)).save(booking);
+    }
+
+    @Test
+    public void testGetBooking() {
+        Booking booking = BookingMapper.toEntity(bookingDto);
+        when(bookingRepository.findById(anyLong())).thenReturn(Optional.of(booking));
+
+        BookingDto result = bookingService.getBooking(booking.getId(), userId);
     }
 }
