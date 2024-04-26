@@ -1,115 +1,121 @@
 package ru.practicum.shareit.integration;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-
+import ru.practicum.shareit.item.ItemController;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.model.ItemMapper;
-import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.item.dto.ItemDtoWithTime;
 import ru.practicum.shareit.item.service.ItemService;
-import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.model.UserMapper;
-import ru.practicum.shareit.user.repository.UserRepository;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@ExtendWith(SpringExtension.class)
-@SpringBootTest(properties = "spring.datasource.url=jdbc:h2:mem:shareit")
-@AutoConfigureMockMvc
+@WebMvcTest(controllers = ItemController.class)
 public class ItemControllerIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
-    @Qualifier("ItemServiceImpl") private ItemService itemService;
+    @MockBean(name = "ItemServiceImpl")
+    private ItemService itemService;
 
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Autowired
-    private UserRepository userRepository;
+    @Test
+    void createItemTest() throws Exception {
+        when(itemService.createItem(any(ItemDto.class), eq(1L)))
+                .thenReturn(new ItemDto(1,"itemName", "description", true,
+                        new User(1, "name", "e@email.ru"), null));
 
-    @Autowired
-    private ItemRepository itemRepository;
+        ItemDto itemCreateRequest = new ItemDto(1,"itemName", "description", true,
+                new User(1, "name", "e@email.ru"), null);
 
-    //@MockBean
-    //@Qualifier("ItemServiceImpl") private ItemService itemServiceMock;
-    private User user1;
-
-    @BeforeEach
-    public void setup() {
-        user1 = new User(1, "User 1", "email1@gmail.com");
-        userRepository.save(user1);
+        mockMvc.perform(post("/items")
+                        .content(objectMapper.writeValueAsString(itemCreateRequest))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("X-Sharer-User-Id", 1))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(1)))
+                .andExpect(jsonPath("$.name", is("itemName")))
+                .andExpect(jsonPath("$.description", is("description")));
     }
 
     @Test
-    public void testCreateItem() throws Exception {
-        long userId = 1;
-        ItemDto itemDto = new ItemDto(1, "itemName", "itemDescription", true, user1, null);
-        //when(itemServiceMock.createItem(itemDto, userId)).thenReturn(itemDto);
+    public void updateItemTest() throws Exception {
+        when(itemService.updateItem(any(ItemDto.class), anyLong(), anyLong()))
+                .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0, ItemDto.class));
 
-        MvcResult result = mockMvc.perform(post("/items")
-                        .header("X-Sharer-User-Id", userId)
+        ItemDto itemDto = ItemDto.builder().id(1).name("itemName2").description("description").build();
+
+        mockMvc.perform(patch("/items/1")
+                        .content(objectMapper.writeValueAsString(itemDto))
+                        .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(itemDto)))
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("X-Sharer-User-Id", 1))
                 .andExpect(status().isOk())
-                .andReturn();
-
-        String responseBody = result.getResponse().getContentAsString();
-        ItemDto response = objectMapper.readValue(responseBody, ItemDto.class);
-        assertEquals(itemDto, response);
+                .andExpect(jsonPath("$.id", is(1)))
+                .andExpect(jsonPath("$.name", is("itemName2")))
+                .andExpect(jsonPath("$.description", is("description")));
     }
 
-    /*@Test
-    public void testUpdateItem() throws Exception {
-        // given
-        long userId = 1;
-        long itemId = 1;
-        ItemDto updateItem = new ItemDto(1, "newName", "newDescription", true, user1, null);
-        ItemDto expectedItem = new ItemDto(1, "newName", "newDescription", true, user1, null);
-         itemRepository.save(ItemMapper.toEntity(updateItem));
-        //when(itemService.updateItem(updateItem, itemId, userId)).thenReturn(expectedItem);
+    @Test
+    void getOwnedItemsListEndpointTest() throws Exception {
+        User owner = new User(1, "user", "e@e.com");
+        ItemDtoWithTime item1 = ItemDtoWithTime.builder().id(1).owner(owner)
+                .name("itemName1").description("description").available(true).build();
+        ItemDtoWithTime item2 = ItemDtoWithTime.builder().id(2).owner(owner)
+                .name("itemName2").description("description").available(true).build();
 
-        // when
-        MvcResult result = mockMvc.perform(patch("/" + itemId)
-                        .header("X-Sharer-User-Id", userId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateItem)))
+        when(itemService.findItemByUserId(eq(1L), anyInt(), anyInt()))
+                .thenReturn(List.of(item1, item2));
+
+        mockMvc.perform(get("/items")
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("X-Sharer-User-Id", 1))
                 .andExpect(status().isOk())
-                .andReturn();
+                .andExpect(content().json(objectMapper.writeValueAsString(List.of(item1, item2))));
+    }
 
-        // then
-        String responseBody = result.getResponse().getContentAsString();
-        ItemDto response = objectMapper.readValue(responseBody, ItemDto.class);
-        assertEquals(expectedItem, response);
-    }*/
+    @Test
+    void getOwnedItemsListEndpointExceptionTest() throws Exception {
+        mockMvc.perform(get("/items")
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .accept(MediaType.APPLICATION_JSON)
+                .header("X-Sharer-User-Id", -1))
+                .andExpect(status().isBadRequest());
+    }
 
+    @Test
+    void getItemEndpointTest() throws Exception {
+        ItemDtoWithTime item1 = ItemDtoWithTime.builder().id(1).owner(new User(1, "user", "e@e.com"))
+                .name("вещь1").description("описание 1").available(true).build();
+
+        when(itemService.findItemById(anyLong(), anyLong()))
+                .thenReturn(item1);
+
+        mockMvc.perform(get("/items/1")
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("X-Sharer-User-Id", 1))
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(item1)));
+    }
 
 }
