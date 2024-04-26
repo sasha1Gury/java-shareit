@@ -5,15 +5,17 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.model.UserMapper;
 import ru.practicum.shareit.user.repository.UserRepository;
 import ru.practicum.shareit.user.service.UserServiceImpl;
 
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
@@ -27,33 +29,36 @@ public class UserServiceImplTest {
     @InjectMocks
     private UserServiceImpl userService;
 
-    private long userId = 1;
+    @Test
+    void getByIdUserNotFound() {
+        when(userRepository.findById(anyLong()))
+                .thenReturn(Optional.empty());
+
+        final NotFoundException exception = assertThrows(
+                NotFoundException.class,
+                () -> userService.findUserById(1));
+
+        assertEquals("Объект User with id 1 not found не наден", exception.getMessage());
+    }
 
     @Test
-    public void updateUserTest() {
-        // Set up a mock user
-        User user = new User();
-        user.setId(userId);
-        user.setEmail("testEmail");
-        user.setName("name");
+    void getByIdUserFound() {
+        when(userRepository.findById(anyLong()))
+                .thenReturn(Optional.of(new User(1, "name", "e@mail.ru")));
 
-        // Set up an updated user
-        User updateUser = new User();
-        updateUser.setId(userId);
-        updateUser.setName("updateName");
-        updateUser.setEmail("");
+        UserDto user = userService.findUserById(1);
 
-        // Update the user entity
-        UserMapper.updateEntity(user, updateUser);
+        assertEquals(1, user.getId());
+        assertEquals("name", user.getName());
+        assertEquals("e@mail.ru", user.getEmail());
+    }
 
-        // Set up mock repository responses
-        when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
-        when(userRepository.save(any())).thenReturn(updateUser);
+    @Test
+    void updateIfUserNotExists() {
+        final NoSuchElementException exception = assertThrows(
+                NoSuchElementException.class,
+                () -> userService.updateUser(new UserDto(1, "name", "e@mail.ru"), 1));
 
-        // Call the method under test
-        UserDto result = userService.updateUser(UserMapper.toDto(updateUser), userId);
-
-        // Assertions
-        assertEquals(updateUser.getName(), result.getName());
+        assertEquals("No value present", exception.getMessage());
     }
 }
