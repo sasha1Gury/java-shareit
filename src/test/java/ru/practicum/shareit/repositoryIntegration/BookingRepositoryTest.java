@@ -34,7 +34,6 @@ public class BookingRepositoryTest {
 
     private User bookerUser;
     private User ownerUser;
-    private Item itemToBook;
     private Booking approvedBooking;
     private Booking waitingBooking;
     private Booking rejectedBooking;
@@ -43,7 +42,7 @@ public class BookingRepositoryTest {
     void beforeEach() {
         bookerUser = em.persistAndFlush(User.builder().name("booker").email("booker@email.ru").build());
         ownerUser = em.persistAndFlush(User.builder().name("owner").email("owner@email.ru").build());
-        itemToBook = em.persistAndFlush(Item.builder().name("компрессор").description("мощный компрессор")
+        Item itemToBook = em.persistAndFlush(Item.builder().name("компрессор").description("мощный компрессор")
                 .available(true).owner(ownerUser).build());
 
         LocalDateTime nowHour = LocalDateTime.now().truncatedTo(ChronoUnit.HOURS);
