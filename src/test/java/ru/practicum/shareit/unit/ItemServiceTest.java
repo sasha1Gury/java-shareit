@@ -14,10 +14,13 @@ import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.Status;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.item.Comment.dto.CommentDto;
 import ru.practicum.shareit.item.Comment.model.Comment;
 import ru.practicum.shareit.item.Comment.repository.CommentRepository;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoWithTime;
+import ru.practicum.shareit.item.exception.ItemOwnerException;
+import ru.practicum.shareit.item.exception.OwnerException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.model.ItemMapper;
 import ru.practicum.shareit.item.repository.ItemRepository;
@@ -26,17 +29,19 @@ import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
-import ru.practicum.shareit.user.service.UserService;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static ru.practicum.shareit.booking.model.Status.APPROVED;
+import static ru.practicum.shareit.booking.model.Status.WAITING;
 
 @SpringBootTest
 public class ItemServiceTest {
@@ -53,7 +58,6 @@ public class ItemServiceTest {
     private ItemRequestRepository mockItemRequestRepository;
     @Mock
     private UserRepository mockUserRepository;
-    private UserService userService;
 
     private Item makeSimpleTestItem() {
         return Item.builder()
@@ -83,7 +87,7 @@ public class ItemServiceTest {
         when(mockItemRepository.findById(anyLong()))
                 .thenReturn(Optional.empty());
 
-        final NotFoundException exception = Assertions.assertThrows(
+        final NotFoundException exception = assertThrows(
                 NotFoundException.class,
                 () -> itemService.findItemById(1, 1));
 
@@ -179,7 +183,7 @@ public class ItemServiceTest {
         when(mockUserRepository.findById(Mockito.anyLong()))
                 .thenReturn(Optional.empty());
 
-        final NotFoundException exception = Assertions.assertThrows(
+        final NotFoundException exception = assertThrows(
                 NotFoundException.class,
                 () -> itemService.createItem(itemCreateRequest, 1));
 
@@ -230,6 +234,121 @@ public class ItemServiceTest {
         List<ItemDto> foundItems = itemService.searchItem("", null, null);
 
         assertEquals(0, foundItems.size());
+    }
+
+    @Test
+    void createCommentNormalWay() {
+        Item simpleTestItem = makeSimpleTestItem();
+        User testUser = new User(2, "name", "e@mail.ru");
+        LocalDateTime current = LocalDateTime.now().truncatedTo(ChronoUnit.HOURS);
+
+        when(mockItemRepository.findById(Mockito.anyLong()))
+                .thenReturn(Optional.of(simpleTestItem));
+
+        when(mockUserRepository.findById(Mockito.anyLong()))
+                .thenReturn(Optional.of(testUser));
+
+        when(mockBookingRepository.findByBooker_Id(anyLong()))
+                .thenReturn(List.of(Booking.builder().id(1).item(simpleTestItem)
+                        .booker(testUser).status(WAITING).start(current).end(current.plusHours(3))
+                        .build()));
+
+        when(mockCommentRepository.save(Mockito.any(Comment.class)))
+                .thenReturn(Comment.builder().id(1L).text("comment text").authorName(testUser.getName()).item(simpleTestItem).build());
+
+
+        CommentDto comment = itemService.createComment(1, 2, CommentDto.builder().item(simpleTestItem).build());
+
+        assertEquals(1, comment.getId());
+    }
+
+    @Test
+    void testGetByUser_IdNormalWay() {
+        LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.HOURS);
+        User testUserOwner = new User(1, "name", "e@mail.ru");
+        User testUserBooker = new User(2, "name", "e@mail.ru");
+        Item item = makeSimpleTestItem();
+
+        List<Comment> testCommentList = List.of(
+                new Comment(1L, "comment 1 text", item, testUserOwner.getName(), now.minusHours(1)),
+                new Comment(2L, "comment 2 text", item, testUserBooker.getName(), now.minusMinutes(1))
+        );
+
+        List<Booking> testBookingList = List.of(
+                new Booking(1, now.minusHours(2), now.minusHours(1), item, testUserBooker, APPROVED),
+                new Booking(2, now.plusHours(1), now.plusHours(2), item, testUserBooker, APPROVED)
+        );
+
+        when(mockUserRepository.findById(anyLong()))
+                .thenReturn(Optional.of(testUserBooker));
+        when(mockItemRepository.findAllByOwner(any()))
+                .thenReturn(List.of(item));
+        when(mockItemRepository.findById(anyLong()))
+                .thenReturn(Optional.of(item));
+        when(mockBookingRepository.findFirstByItemIdAndEndIsBeforeAndStatusOrderByEndDesc(any(), any(), any()))
+                .thenReturn(Optional.of(new Booking(1, now.minusHours(2), now.minusHours(1), item, testUserBooker, Status.APPROVED)));
+        when(mockBookingRepository.findFirstByItemIdAndStartIsAfterAndStatusOrderByStartAsc(any(), any(), any()))
+                .thenReturn(Optional.of(new Booking(2, now.plusHours(1), now.plusHours(2), item, testUserBooker, Status.APPROVED)));
+        when(mockBookingRepository.findFirstByItemIdAndStartBeforeAndEndAfterAndStatusOrderByStartDesc(any(), any(), any(), any()))
+                .thenReturn(Optional.of(new Booking(1, now.minusHours(2), now.minusHours(1), item, testUserBooker, Status.APPROVED)));
+        when(mockCommentRepository.findAllByItem(any()))
+                .thenReturn(testCommentList);
+
+        List<ItemDtoWithTime> itemDtoWithTime = itemService.findItemByUserId(1, null, null);
+
+        assertEquals(1, itemDtoWithTime.get(0).getId());
+        assertEquals(1, itemDtoWithTime.get(0).getOwner().getId());
+        assertEquals("name", itemDtoWithTime.get(0).getName());
+        assertEquals("description", itemDtoWithTime.get(0).getDescription());
+        assertEquals(testBookingList.get(0).getId(), itemDtoWithTime.get(0).getLastBooking().getId());
+        assertEquals(testBookingList.get(1).getId(), itemDtoWithTime.get(0).getNextBooking().getId());
+        assertEquals(testCommentList.get(0).getId(), itemDtoWithTime.get(0).getComments().get(0).getId());
+        assertEquals(testCommentList.get(1).getId(), itemDtoWithTime.get(0).getComments().get(1).getId());
+    }
+
+    @Test
+    void testUpdateItemThrowsOwnerException() {
+        long userId = 1;
+        long itemId = 2;
+        User owner = new User(userId, "ownerName", "owner@mail.com");
+        User otherUser = new User(3, "otherUserName", "otherUser@mail.com");
+        ItemDto updateItem = ItemDto.builder().name("itemName").build();
+        Item item = new Item(itemId, "itemName", "itemDescription", true, owner, null);
+
+        when(mockUserRepository.findById(anyLong())).thenReturn(Optional.of(otherUser));
+        when(mockItemRepository.findById(itemId)).thenReturn(Optional.of(item));
+
+        assertThrows(OwnerException.class, () -> itemService.updateItem(updateItem, itemId, userId));
+
+        verify(mockUserRepository, times(1)).findById(userId);
+        verify(mockItemRepository, times(1)).findById(itemId);
+        verifyNoMoreInteractions(mockUserRepository, mockItemRepository);
+    }
+
+    @Test
+    void createCommentException() {
+        Item simpleTestItem = makeSimpleTestItem();
+        User testUser = new User(2, "name", "e@mail.ru");
+        LocalDateTime current = LocalDateTime.now().truncatedTo(ChronoUnit.HOURS);
+
+        when(mockItemRepository.findById(Mockito.anyLong()))
+                .thenReturn(Optional.of(simpleTestItem));
+
+        when(mockUserRepository.findById(Mockito.anyLong()))
+                .thenReturn(Optional.of(testUser));
+
+        when(mockBookingRepository.findByBooker_Id(anyLong()))
+                .thenReturn(new ArrayList<>());
+
+        when(mockCommentRepository.save(Mockito.any(Comment.class)))
+                .thenReturn(Comment.builder().id(1L).text("comment text").authorName(testUser.getName()).item(simpleTestItem).build());
+
+
+        final ItemOwnerException exception = Assertions.assertThrows(
+                ItemOwnerException.class,
+                () -> itemService.createComment(1, 1, new CommentDto()));
+
+        Assertions.assertEquals("Оставлять отзывы могут только тот пользователь, который брал эту вещь в аренду", exception.getMessage());
     }
 
 }
