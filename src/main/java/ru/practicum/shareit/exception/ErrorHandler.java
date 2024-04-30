@@ -13,18 +13,11 @@ import ru.practicum.shareit.item.exception.AvailableNotInitInItem;
 import ru.practicum.shareit.item.exception.ItemOwnerException;
 import ru.practicum.shareit.item.exception.OwnerException;
 import ru.practicum.shareit.user.exception.EmailExistException;
-import ru.practicum.shareit.user.exception.NewUserException;
 
 import javax.validation.ValidationException;
 
 @RestControllerAdvice
 public class ErrorHandler {
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorResponse handleNewUserException(final NewUserException e) {
-        return new ErrorResponse(e.getMessage());
-    }
-
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleNotFoundException(final NotFoundException e) {
@@ -90,7 +83,6 @@ public class ErrorHandler {
     @ExceptionHandler(ValidationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleValidationException(ValidationException ex) {
-        //FieldError fieldError = ex.getBindingResult().getFieldError();
         return new ErrorResponse("Ошибка валидации поля");
     }
 }
