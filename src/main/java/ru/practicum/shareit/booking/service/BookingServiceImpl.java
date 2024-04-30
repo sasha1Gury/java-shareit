@@ -106,12 +106,10 @@ public class BookingServiceImpl implements BookingService {
                     throw new UnsupportedStateException(state.toString());
             }
         } else {
-            ///////fix////////
             Pageable page;
             if (from < 0 || size < 0) {
                 page = PageRequest.of(from, size);
             } else page = PageRequest.of(from / size, size);
-            /////////////////
 
             switch (state) {
                 case CURRENT:
