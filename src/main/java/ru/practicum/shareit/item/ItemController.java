@@ -47,14 +47,18 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemDtoWithTime> findItemByUserId(@RequestHeader("X-Sharer-User-Id") long userId) {
-        return itemService.findItemByUserId(userId);
+    public List<ItemDtoWithTime> findItemByUserId(@RequestHeader("X-Sharer-User-Id") long userId,
+                                                  @RequestParam(required = false) Integer from,
+                                                  @RequestParam(required = false) Integer size) {
+        return itemService.findItemByUserId(userId, from, size);
     }
 
     @GetMapping("/search")
-    public List<ItemDto> searchItems(@RequestParam("text") String search) {
+    public List<ItemDto> searchItems(@RequestParam("text") String search,
+                                     @RequestParam(required = false) Integer from,
+                                     @RequestParam(required = false) Integer size) {
         search = search.toLowerCase();
-        return itemService.searchItem(search);
+        return itemService.searchItem(search, from, size);
     }
 
     @PostMapping("/{itemId}/comment")
