@@ -17,7 +17,8 @@
 	<name>ShareIt</name>
 	<modules>
 		<module>shareit-server</module>
-	</modules>
+        <module>shareit-gateway</module>
+    </modules>
 
 	<properties>
 		<java.version>11</java.version>
