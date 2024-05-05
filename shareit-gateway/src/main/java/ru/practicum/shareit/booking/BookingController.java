@@ -12,6 +12,7 @@ import ru.practicum.shareit.booking.enums.State;
 import ru.practicum.shareit.booking.validation.CreateBookingValidation;
 
 import javax.validation.constraints.Positive;
+import java.util.EnumSet;
 
 @Controller
 @RequestMapping(path = "/bookings")
@@ -32,7 +33,7 @@ public class BookingController {
     @PatchMapping("/{bookingId}")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Object> updateBookingApproval(@Positive @PathVariable Long bookingId, @RequestParam boolean approved,
-                                          @RequestHeader("X-Sharer-User-Id") long userId) {
+                                                        @RequestHeader("X-Sharer-User-Id") long userId) {
         log.info("Approve booking {}, ownerId {}, approved {}", bookingId, userId, approved);
 
         return bookingClient.updateBookingApproval(userId, bookingId, approved);
@@ -46,20 +47,26 @@ public class BookingController {
     }
 
     @GetMapping
-    public ResponseEntity<Object> getUserBookings(@Positive @RequestParam(defaultValue = "ALL") State state,
+    public ResponseEntity<Object> getUserBookings(@RequestParam(defaultValue = "ALL") State state,
                                                   @RequestHeader("X-Sharer-User-Id") long userId,
                                                   @RequestParam(required = false) Integer from,
                                                   @RequestParam(required = false) Integer size) {
         log.info("Get booking with state {}, userId={}, from={}, size={}", state, userId, from, size);
+        if (!EnumSet.allOf(State.class).contains(state)) {
+            throw new IllegalArgumentException("State " + state + " is not supported");
+        }
         return bookingClient.getUserBookings(userId, state, from, size);
     }
 
     @GetMapping("/owner")
-    public ResponseEntity<Object> getOwnerBookings(@Positive@RequestParam(defaultValue = "ALL") State state,
-                                                       @RequestHeader("X-Sharer-User-Id") long userId,
-                                                       @RequestParam(required = false) Integer from,
-                                                       @RequestParam(required = false) Integer size) {
+    public ResponseEntity<Object> getOwnerBookings(@RequestParam(defaultValue = "ALL") State state,
+                                                   @RequestHeader("X-Sharer-User-Id") long userId,
+                                                   @RequestParam(required = false) Integer from,
+                                                   @RequestParam(required = false) Integer size) {
         log.info("Get booking of items of owner {} with state {}, from={}, size={}", userId, state, from, size);
+        if (!EnumSet.allOf(State.class).contains(state)) {
+            throw new IllegalArgumentException("State " + state + " is not supported");
+        }
         return bookingClient.getOwnerBookings(userId, state, from, size);
     }
 
