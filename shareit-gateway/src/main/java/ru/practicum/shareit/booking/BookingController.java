@@ -10,12 +10,8 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.enums.State;
 import ru.practicum.shareit.booking.validation.CreateBookingValidation;
-import ru.practicum.shareit.booking.validator.BookingCreateValidator;
-import ru.practicum.shareit.common.Constants;
 
-import javax.validation.Valid;
 import javax.validation.constraints.Positive;
-import javax.validation.constraints.PositiveOrZero;
 
 @Controller
 @RequestMapping(path = "/bookings")
