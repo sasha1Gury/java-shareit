@@ -3,17 +3,12 @@ package ru.practicum.shareit.booking.enums;
 import java.util.Optional;
 
 public enum State {
-    // Все
     ALL,
-    // Текущие
     CURRENT,
-    // Будущие
     FUTURE,
-    // Завершенные
     PAST,
-    // Отклоненные
     REJECTED,
-    // Ожидающие подтверждения
+    UNSUPPORTED_STATUS,
     WAITING;
 
     public static Optional<State> from(String stringState) {
