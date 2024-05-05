@@ -11,6 +11,8 @@ import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.enums.State;
 import ru.practicum.shareit.client.BaseClient;
 
+import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.Map;
 
 @Service
@@ -28,20 +30,18 @@ public class BookingClient extends BaseClient {
     }
 
     public ResponseEntity<Object> getUserBookings(long userId, State state, Integer from, Integer size) {
-        Map<String, Object> parameters = Map.of(
-                "state", state.name(),
-                "from", from,
-                "size", size
-        );
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("from", from);
+        parameters.put("size", size);
+        parameters.put("state", state.name());
         return get("?state={state}&from={from}&size={size}", userId, parameters);
     }
 
     public ResponseEntity<Object> getOwnerBookings(long ownerId, State state, Integer from, Integer size) {
-        Map<String, Object> parameters = Map.of(
-                "state", state.name(),
-                "from", from,
-                "size", size
-        );
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("from", from);
+        parameters.put("size", size);
+        parameters.put("state", state.name());
         return get("/owner?state={state}&from={from}&size={size}", ownerId, parameters);
     }
 
