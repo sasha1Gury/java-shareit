@@ -11,6 +11,7 @@ import ru.practicum.shareit.client.BaseClient;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @Service
@@ -36,10 +37,9 @@ public class ItemClient extends BaseClient {
     }
 
     public ResponseEntity<Object> findItemByUserId(long ownerId, Integer from, Integer size) {
-        Map<String, Object> parameters = Map.of(
-                "from", from,
-                "size", size
-        );
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("from", from);
+        parameters.put("size", size);
         return get("?from={from}&size={size}", ownerId, parameters);
     }
 
@@ -48,11 +48,11 @@ public class ItemClient extends BaseClient {
     }
 
     public ResponseEntity<Object> searchItems(String text, Integer from, Integer size) {
-        Map<String, Object> parameters = Map.of(
-                "text", text,
-                "from", from,
-                "size", size
-        );
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("text", text);
+        parameters.put("from", from);
+        parameters.put("size", size);
+
         return get("/search?text={text}&from={from}&size={size}", 0L, parameters);
     }
 
