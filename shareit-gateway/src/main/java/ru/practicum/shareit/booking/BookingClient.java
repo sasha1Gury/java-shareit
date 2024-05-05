@@ -11,7 +11,6 @@ import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.enums.State;
 import ru.practicum.shareit.client.BaseClient;
 
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
