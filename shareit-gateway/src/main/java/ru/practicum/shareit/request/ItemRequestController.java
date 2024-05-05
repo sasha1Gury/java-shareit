@@ -17,19 +17,19 @@ import javax.validation.constraints.Positive;
 @Validated
 public class ItemRequestController {
 
-    private final RequestClient requestClient;
+    private final ItemRequestClient itemRequestClient;
 
     @PostMapping
     public ResponseEntity<Object> createRequest(@Valid @RequestBody ItemRequestDto itemRequestDto,
                                                 @Positive @RequestHeader("X-Sharer-User-Id") long userId) {
         log.info("Create item request{}, owner {}", itemRequestDto, userId);
-        return requestClient.createRequest(userId, itemRequestDto);
+        return itemRequestClient.createRequest(userId, itemRequestDto);
     }
 
     @GetMapping
     public ResponseEntity<Object> getAllItemRequests(@Positive @RequestHeader("X-Sharer-User-Id") long userId) {
         log.info("Get own item requests authorId {}", userId);
-        return requestClient.getAllItemRequests(userId);
+        return itemRequestClient.getAllItemRequests(userId);
     }
 
     @GetMapping("/all")
@@ -37,13 +37,13 @@ public class ItemRequestController {
                                                  @RequestParam(required = false) Integer size,
                                                  @Positive @RequestHeader("X-Sharer-User-Id") long userId) {
         log.info("Get all item requests from {} size {} requestAuthorId {}", from, size, userId);
-        return requestClient.getAllRequests(userId, from, size);
+        return itemRequestClient.getAllRequests(userId, from, size);
     }
 
     @GetMapping("/{requestId}")
     public ResponseEntity<Object> getById(@Positive @PathVariable long requestId,
                                           @Positive @RequestHeader("X-Sharer-User-Id") long userId) {
         log.info("Get requestId {} for userId {}", requestId, userId);
-        return requestClient.getRequestById(userId, requestId);
+        return itemRequestClient.getRequestById(userId, requestId);
     }
 }
