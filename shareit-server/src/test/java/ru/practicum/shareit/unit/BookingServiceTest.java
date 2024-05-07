@@ -533,4 +533,89 @@ class BookingServiceTest {
 
         Assertions.assertEquals("Unknown state: UNSUPPORTED_STATUS", exception.getMessage());
     }
+
+    @Test
+    void getBookingsByUserStatusPASTPage() {
+        Booking testBooking = makeTestBooking(Status.WAITING);
+
+        when(mockUserRepository.findById(1L))
+                .thenReturn(Optional.of(testBooking.getBooker()));
+        when(mockBookingRepository.findAllByBookerAndEndIsBeforeOrderByEndDesc(
+                any(), any(), any())).thenReturn(new PageImpl<>(List.of(testBooking)));
+
+        List<BookingDto> bookingDtos = bookingService.getUserBookings(State.PAST, 1, 0, 20);
+
+        assertEquals(1, bookingDtos.size());
+    }
+
+    @Test
+    void getBookingsByUserStatusFUTUREPage() {
+        Booking testBooking = makeTestBooking(Status.WAITING);
+
+        when(mockUserRepository.findById(1L))
+                .thenReturn(Optional.of(testBooking.getBooker()));
+        when(mockBookingRepository.findFutureBookingsByBookerOrderByStartDesc(
+                any(), any())).thenReturn(new PageImpl<>(List.of(testBooking)));
+
+        List<BookingDto> bookingDtos = bookingService.getUserBookings(State.FUTURE, 1, 0, 20);
+
+        assertEquals(1, bookingDtos.size());
+    }
+
+    @Test
+    void getBookingsByUserStatusWAITINGPage() {
+        Booking testBooking = makeTestBooking(Status.WAITING);
+
+        when(mockUserRepository.findById(1L))
+                .thenReturn(Optional.of(testBooking.getBooker()));
+        when(mockBookingRepository.findAllByBookerAndStatus(
+                any(), any(), any())).thenReturn(new PageImpl<>(List.of(testBooking)));
+
+        List<BookingDto> bookingDtos = bookingService.getUserBookings(State.WAITING, 1, 0, 20);
+
+        assertEquals(1, bookingDtos.size());
+    }
+
+    @Test
+    void getBookingsByUserStatusREJECTEDPage() {
+        Booking testBooking = makeTestBooking(Status.WAITING);
+
+        when(mockUserRepository.findById(1L))
+                .thenReturn(Optional.of(testBooking.getBooker()));
+        when(mockBookingRepository.findAllByBookerAndStatus(
+                any(), any(), any())).thenReturn(new PageImpl<>(List.of(testBooking)));
+
+        List<BookingDto> bookingDtos = bookingService.getUserBookings(State.REJECTED, 1, 0, 20);
+
+        assertEquals(1, bookingDtos.size());
+    }
+
+    @Test
+    void getBookingsByUserStatusALLPage() {
+        Booking testBooking = makeTestBooking(Status.WAITING);
+
+        when(mockUserRepository.findById(1L))
+                .thenReturn(Optional.of(testBooking.getBooker()));
+        when(mockBookingRepository.findAllBookingsByBookerOrderByStartDesc(
+                any(), any())).thenReturn(new PageImpl<>(List.of(testBooking)));
+
+        List<BookingDto> bookingDtos = bookingService.getUserBookings(State.ALL, 1, 0, 20);
+
+        assertEquals(1, bookingDtos.size());
+    }
+
+    @Test
+    void getBookingsByUserIdUnsupportedStatusPage() {
+        Booking testBooking = makeTestBooking(Status.WAITING);
+
+        Mockito
+                .when(mockUserRepository.findById(1L))
+                .thenReturn(Optional.of(testBooking.getBooker()));
+
+        final UnsupportedStateException exception = Assertions.assertThrows(
+                UnsupportedStateException.class,
+                () -> bookingService.getUserBookings(State.UNSUPPORTED_STATUS, 1, 0, 20));
+
+        Assertions.assertEquals("Unknown state: UNSUPPORTED_STATUS", exception.getMessage());
+    }
 }
