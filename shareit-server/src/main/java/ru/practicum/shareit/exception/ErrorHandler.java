@@ -14,7 +14,6 @@ import ru.practicum.shareit.item.exception.ItemOwnerException;
 import ru.practicum.shareit.item.exception.OwnerException;
 import ru.practicum.shareit.user.exception.EmailExistException;
 
-import javax.validation.ValidationException;
 
 @RestControllerAdvice
 public class ErrorHandler {
@@ -78,11 +77,5 @@ public class ErrorHandler {
         FieldError fieldError = ex.getBindingResult().getFieldError();
         return new ErrorResponse("Ошибка валидации поля '" + fieldError.getField()
                 + "': " + fieldError.getDefaultMessage());
-    }
-
-    @ExceptionHandler(ValidationException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleValidationException(ValidationException ex) {
-        return new ErrorResponse("Ошибка валидации поля");
     }
 }

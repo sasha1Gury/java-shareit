@@ -1,11 +1,9 @@
 package ru.practicum.shareit.user;
 
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.service.UserService;
-import ru.practicum.shareit.user.validation.CreateUserValidation;
 
 import java.util.List;
 
@@ -22,7 +20,7 @@ public class UserController {
     }
 
     @PostMapping
-    public UserDto createUser(@Validated(CreateUserValidation.class) @RequestBody UserDto user) {
+    public UserDto createUser(@RequestBody UserDto user) {
         return userService.createUser(user);
     }
 

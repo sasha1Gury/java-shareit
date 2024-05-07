@@ -15,7 +15,6 @@ import ru.practicum.shareit.item.exception.ItemOwnerException;
 import ru.practicum.shareit.item.exception.OwnerException;
 import ru.practicum.shareit.user.exception.EmailExistException;
 
-import javax.validation.ValidationException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -72,14 +71,6 @@ public class ErrorHandlerTest {
         MethodArgumentNotValidException exception = new MethodArgumentNotValidException(null, bindingResult);
         ErrorResponse response = errorHandler.handleMethodValidationException(exception);
         assertEquals("Ошибка валидации поля 'fieldName': errorMessage", response.getError());
-    }
-
-    @Test
-    void handleValidationException() {
-        ErrorHandler errorHandler = new ErrorHandler();
-        ValidationException exception = new ValidationException("Validation error");
-        ErrorResponse response = errorHandler.handleValidationException(exception);
-        assertEquals("Ошибка валидации поля", response.getError());
     }
 
     @Test
